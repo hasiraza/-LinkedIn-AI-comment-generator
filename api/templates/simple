@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Interface - Ethicallogix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #0077b5;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            color: white;
+            font-size: 24px;
+        }
+
+        .nav {
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .nav a {
+            margin-right: 20px;
+            text-decoration: none;
+            color: #0077b5;
+            font-weight: 500;
+        }
+
+        .nav a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #0077b5;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #0077b5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #006097;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f7fc;
+            border-radius: 4px;
+            border-left: 4px solid #0077b5;
+            min-height: 80px;
+            white-space: pre-wrap;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .copy-btn {
+            background-color: #28a745;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+
+        .clear-btn {
+            background-color: #dc3545;
+        }
+
+        .clear-btn:hover {
+            background-color: #c82333;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Simple Reply Generator</h1>
+    </header>
+    
+    <div class="nav">
+        <a href="/">Home</a>
+        <a href="/dashboard">Performance Dashboard</a>
+        <a href="/simple">Simple Interface</a>
+    </div>
+    
+    <div class="container">
+        <h2>Quick Reply Generator</h2>
+        
+        <textarea id="comment" placeholder="Enter the comment you want to reply to..."></textarea>
+        
+        <button onclick="generateReply()">Generate Reply</button>
+        <button onclick="clearAll()" class="clear-btn">Clear All</button>
+        
+        <div id="result" class="result hidden"></div>
+        
+        <button id="copyBtn" onclick="copyToClipboard()" class="copy-btn hidden">Copy Reply</button>
+    </div>
+
+    <script>
+        async function generateReply() {
+            const comment = document.getElementById('comment').value;
+            if (!comment.trim()) {
+                alert('Please enter a comment');
+                return;
+            }
+            
+            const button = document.querySelector('button');
+            button.disabled = true;
+            button.textContent = 'Generating...';
+            
+            try {
+                const response = await fetch('/api/generate-reply', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        comment: comment,
+                        context: 'professional'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('result').textContent = data.reply;
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('copyBtn').classList.remove('hidden');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error occurred'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Generate Reply';
+            }
+        }
+        
+        function copyToClipboard() {
+            const result = document.getElementById('result');
+            navigator.clipboard.writeText(result.textContent)
+                .then(() => {
+                    alert('Reply copied to clipboard!');
+                })
+                .catch(err => {
+                    alert('Failed to copy: ' + err);
+                });
+        }
+        
+        function clearAll() {
+            document.getElementById('comment').value = '';
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('copyBtn').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
